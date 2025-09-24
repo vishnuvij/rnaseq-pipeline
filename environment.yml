@@ -1,0 +1,19 @@
+name: rnaseq-pipeline
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.10
+  - snakemake
+  - fastqc
+  - cutadapt
+  - star
+  - salmon
+  - samtools
+  - r-base
+  - bioconductor-deseq2
+  - bioconductor-tximport
+  - r-ggplot2
+  - r-pheatmap
+  - r-tidyverse
