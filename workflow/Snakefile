@@ -1,0 +1,33 @@
+# workflow/Snakefile
+# First rule: download small FASTQ + run FastQC
+
+# Dataset: SRR4238351 (subset from GEO/SRA, small test RNA-seq)
+
+# Output folder
+FASTQC_DIR = "results/fastqc"
+
+# Rule: default target
+rule all:
+    input:
+        f"{FASTQC_DIR}/SRR4238351_fastqc.html"
+
+# Rule: download FASTQ (compressed .fastq.gz)
+rule download_fastq:
+    output:
+        "data/SRR4238351.fastq.gz"
+    shell:
+        """
+        wget -O {output} https://github.com/josoga2/yt-dataset/raw/main/dataset/SRR4238351_1M.fastq.gz
+        """
+
+# Rule: run FastQC
+rule fastqc:
+    input:
+        "data/SRR4238351.fastq.gz"
+    output:
+        html = f"{FASTQC_DIR}/SRR4238351_fastqc.html",
+        zip  = f"{FASTQC_DIR}/SRR4238351_fastqc.zip"
+    shell:
+        """
+        fastqc {input} --outdir {FASTQC_DIR}
+        """
