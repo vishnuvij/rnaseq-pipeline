@@ -6,7 +6,8 @@ ALIGN_DIR  = "results/alignment"
 # --- Final target ---
 rule all:
     input:
-        f"{ALIGN_DIR}/SRR000648.bam"
+        f"{ALIGN_DIR}/SRR000648.bam",
+        "results/multiqc_report.html"
 
 # --- Download FASTQ ---
 rule download_fastq:
