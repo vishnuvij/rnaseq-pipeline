@@ -5,22 +5,22 @@ FASTQC_DIR = "results/fastqc"
 
 rule all:
     input:
-        f"{FASTQC_DIR}/SRR390728_1_fastqc.html"
+        f"{FASTQC_DIR}/SRR1552444_1_fastqc.html"
 
 rule download_fastq:
     output:
-        "data/SRR390728_1.fastq.gz"
+        "data/SRR1552444_1.fastq.gz"
     shell:
         """
-        fastq-dl --accession SRR390728 --outdir data --provider ena
+        fastq-dl --accession SRR1552444 --outdir data --provider ena
         """
 
 rule fastqc:
     input:
-        "data/SRR390728_1.fastq.gz"
+        "data/SRR1552444_1.fastq.gz"
     output:
-        html = f"{FASTQC_DIR}/SRR390728_1_fastqc.html",
-        zip  = f"{FASTQC_DIR}/SRR390728_1_fastqc.zip"
+        html = f"{FASTQC_DIR}/SRR1552444_1_fastqc.html",
+        zip  = f"{FASTQC_DIR}/SRR1552444_1_fastqc.zip"
     shell:
         """
         fastqc {input} --outdir {FASTQC_DIR}
