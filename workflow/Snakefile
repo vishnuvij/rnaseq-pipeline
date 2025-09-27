@@ -1,9 +1,13 @@
+# --- Directories ---
 FASTQC_DIR = "results/fastqc"
+TRIM_DIR   = "results/trimmed"
 
+# --- Final target ---
 rule all:
     input:
-        f"{FASTQC_DIR}/SRR000648_fastqc.html"
+        "results/multiqc_report.html"
 
+# --- Download FASTQ ---
 rule download_fastq:
     output:
         "data/SRR000648.fastq.gz"
@@ -12,7 +16,8 @@ rule download_fastq:
         fastq-dl --accession SRR000648 --outdir data --provider ena
         """
 
-rule fastqc:
+# --- FastQC on raw reads ---
+rule fastqc_raw:
     input:
         "data/SRR000648.fastq.gz"
     output:
@@ -21,4 +26,46 @@ rule fastqc:
     shell:
         """
         fastqc {input} --outdir {FASTQC_DIR}
+        """
+
+# --- Trim adapters & low-quality bases ---
+rule trim_reads:
+    input:
+        "data/SRR000648.fastq.gz"
+    output:
+        f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz"
+    threads: 2
+    params:
+        adapter = "AGATCGGAAGAGC",   # common Illumina adapter
+        q = 20,                      # quality trim threshold
+        minlen = 20                  # drop reads shorter than this
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {TRIM_DIR}
+        cutadapt -j {threads} -a {params.adapter} -q {params.q} -m {params.minlen} \
+          -o {output} {input}
+        """
+
+# --- FastQC on trimmed reads ---
+rule fastqc_trimmed:
+    input:
+        f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz"
+    output:
+        html = f"{FASTQC_DIR}/SRR000648_trimmed_fastqc.html",
+        zip  = f"{FASTQC_DIR}/SRR000648_trimmed_fastqc.zip"
+    shell:
+        """
+        fastqc {input} --outdir {FASTQC_DIR}
+        """
+
+# --- MultiQC summary ---
+rule multiqc:
+    input:
+        expand(f"{FASTQC_DIR}/{{sample}}_fastqc.html", sample=["SRR000648", "SRR000648_trimmed"])
+    output:
+        "results/multiqc_report.html"
+    shell:
+        """
+        multiqc results/fastqc --outdir results
         """

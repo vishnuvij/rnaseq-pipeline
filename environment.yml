@@ -18,3 +18,5 @@ dependencies:
   - r-pheatmap
   - r-tidyverse
   - fastq-dl
+  - multiqc
+
