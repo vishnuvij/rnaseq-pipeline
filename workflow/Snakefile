@@ -99,7 +99,6 @@ rule star_index:
         STAR --runThreadN {threads} \
              --runMode genomeGenerate \
              --genomeDir {output} \
-             --genomeFastaFiles {REF_DIR}/genome.fa \
-             --sjdbOverhang 49
+             --genomeFastaFiles {REF_DIR}/genome.fa
         """
 
