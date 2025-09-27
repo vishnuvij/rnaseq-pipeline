@@ -21,3 +21,7 @@ __pycache__/
 # Reference files
 reference/*
 !reference/README.md
+
+# Alignment outputs
+results/alignment/*
+!results/alignment/README.md

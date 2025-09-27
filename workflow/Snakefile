@@ -101,4 +101,25 @@ rule star_index:
              --genomeDir {output} \
              --genomeFastaFiles {REF_DIR}/genome.fa
         """
+# --- STAR alignment ---
+ALIGN_DIR = "results/alignment"
+
+rule star_align:
+    input:
+        fastq = f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz",
+        index = directory(STAR_INDEX)
+    output:
+        bam = f"{ALIGN_DIR}/SRR000648_aligned.bam"
+    threads: 4
+    shell:
+        r"""
+        mkdir -p {ALIGN_DIR}
+        STAR --runThreadN {threads} \
+             --genomeDir {input.index} \
+             --readFilesIn {input.fastq} \
+             --readFilesCommand zcat \
+             --outSAMtype BAM SortedByCoordinate \
+             --outFileNamePrefix {ALIGN_DIR}/SRR000648_
+        mv {ALIGN_DIR}/SRR000648_Aligned.sortedByCoord.out.bam {output.bam}
+        """
 
