@@ -21,3 +21,9 @@ It automates all major steps of RNA-seq data processing — from downloading FAS
 ```bash
 git clone https://github.com/vishnuvij/rnaseq-pipeline.git
 cd rnaseq-pipeline
+
+### 2. Build the Docker image
+```bash
+docker build -t rnaseq-pipeline .
+
+
