@@ -1,7 +1,7 @@
 name: rnaseq-pipeline
 channels:
+  - bioconda       # put bioconda first
   - conda-forge
-  - bioconda
   - defaults
 dependencies:
   - python=3.10
@@ -17,3 +17,4 @@ dependencies:
   - r-ggplot2
   - r-pheatmap
   - r-tidyverse
+  - fastq-dl

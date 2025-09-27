@@ -3,6 +3,13 @@ data/*
 !data/README.md
 results/*
 
+# Ignore Snakemake working dirs
+.snakemake/
+workflow/.snakemake/
+
+# Ignore temporary FASTQ files
+*.fastq.gz
+
 # Ignore caches
 __pycache__/
 .ipynb_checkpoints/

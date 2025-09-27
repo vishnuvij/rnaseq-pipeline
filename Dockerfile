@@ -7,11 +7,14 @@ WORKDIR /pipeline
 # Copy environment.yml into container
 COPY environment.yml .
 
-# Create and activate conda environment
-RUN conda env create -f environment.yml
+# Install mamba for faster/more reliable environment solves
+RUN conda install -n base -c conda-forge mamba -y
 
-# Ensure the environment is always active
-SHELL ["conda", "run", "-n", "rnaseq-pipeline", "/bin/bash", "-c"]
+# Create conda environment with mamba (auto-confirm)
+RUN mamba env create -f environment.yml -y
 
-# Default command
-CMD ["bash"]
+# Initialize conda and ensure env is active on login
+RUN conda init bash && echo "conda activate rnaseq-pipeline" >> ~/.bashrc
+
+# Default command starts a login shell so env is active
+CMD ["bash", "-l"]
