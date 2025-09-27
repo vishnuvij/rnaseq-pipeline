@@ -2,6 +2,7 @@
 FASTQC_DIR = "results/fastqc"
 TRIM_DIR   = "results/trimmed"
 ALIGN_DIR  = "results/alignment"
+REF_DIR    = "reference"
 
 # --- Final target ---
 rule all:
@@ -71,8 +72,8 @@ rule multiqc:
         """
         multiqc results/fastqc --outdir results
         """
+
 # --- Reference genome (yeast) ---
-REF_DIR = "reference"
 GENOME_FASTA_GZ = f"{REF_DIR}/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
 
 rule download_reference:
@@ -84,6 +85,7 @@ rule download_reference:
         mkdir -p {REF_DIR}
         wget -O {output} https://ftp.ensembl.org/pub/release-111/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
         """
+
 # --- STAR genome index ---
 STAR_INDEX = f"{REF_DIR}/star_index"
 
@@ -103,34 +105,12 @@ rule star_index:
              --genomeDir {output} \
              --genomeFastaFiles {REF_DIR}/genome.fa
         """
-# --- STAR alignment ---
-ALIGN_DIR = "results/alignment"
 
+# --- STAR alignment ---
 rule star_align:
     input:
-        fastq = f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz",
-        index = directory(STAR_INDEX)
-    output:
-        bam = f"{ALIGN_DIR}/SRR000648_aligned.bam"
-    threads: 4
-    shell:
-        r"""
-        mkdir -p {ALIGN_DIR}
-        STAR --runThreadN {threads} \
-             --genomeDir {input.index} \
-             --readFilesIn {input.fastq} \
-             --readFilesCommand zcat \
-             --outSAMtype BAM SortedByCoordinate \
-             --outFileNamePrefix {ALIGN_DIR}/SRR000648_
-        mv {ALIGN_DIR}/SRR000648_Aligned.sortedByCoord.out.bam {output.bam}
-        """
-# --- STAR alignment ---
-ALIGN_DIR = "results/alignment"
-
-rule star_align:
-    input:
-        reads = "results/trimmed/SRR000648_trimmed.fastq.gz",
-        index = "reference/star_index"
+        reads = f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz",
+        index = STAR_INDEX
     output:
         bam = f"{ALIGN_DIR}/SRR000648.bam"
     threads: 4
@@ -144,8 +124,5 @@ rule star_align:
              --outSAMtype BAM SortedByCoordinate \
              --outFileNamePrefix {ALIGN_DIR}/SRR000648_
 
-        # Rename STAR output to expected BAM
         mv {ALIGN_DIR}/SRR000648_Aligned.sortedByCoord.out.bam {output.bam}
         """
-
-
