@@ -69,3 +69,16 @@ rule multiqc:
         """
         multiqc results/fastqc --outdir results
         """
+# --- Reference genome (yeast) ---
+REF_DIR = "reference"
+GENOME_FASTA_GZ = f"{REF_DIR}/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
+
+rule download_reference:
+    output:
+        GENOME_FASTA_GZ
+    shell:
+        r"""
+        set -euo pipefail
+        mkdir -p {REF_DIR}
+        wget -O {output} https://ftp.ensembl.org/pub/release-111/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+        """
