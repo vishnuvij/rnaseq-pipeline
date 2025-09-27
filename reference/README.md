@@ -1,0 +1,1 @@
+Reference genomes/indices are downloaded here by the workflow. Do not commit large files.

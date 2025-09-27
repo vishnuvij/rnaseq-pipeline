@@ -17,3 +17,7 @@ __pycache__/
 # Ignore virtual envs
 .venv/
 .env
+
+# Reference files
+reference/*
+!reference/README.md
