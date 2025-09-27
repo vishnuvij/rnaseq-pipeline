@@ -5,7 +5,7 @@ It automates all major steps of RNA-seq data processing — from downloading FAS
 
 ---
 
-##  Features
+## ✨ Features
 - 🔹 Download FASTQ files from **ENA/SRA** using [`fastq-dl`](https://github.com/rnajena/fastq-dl)  
 - 🔹 Quality control with **FastQC**  
 - 🔹 Adapter and quality trimming using **cutadapt**  
@@ -21,33 +21,3 @@ It automates all major steps of RNA-seq data processing — from downloading FAS
 ```bash
 git clone https://github.com/vishnuvij/rnaseq-pipeline.git
 cd rnaseq-pipeline
-
-### 2. Build the Docker image
-```bash
-docker build -t rnaseq-pipeline .
-
-📂 Configuration
-samples:
-  - SRR000648
-
-reference:
-  name: Saccharomyces_cerevisiae.R64-1-1.dna.toplevel
-  url: "https://ftp.ensembl.org/pub/release-111/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
-
-▶️ Usage
-Run the pipeline inside Docker
-
-docker run -it --rm -v ${PWD}:/pipeline rnaseq-pipeline
-cd workflow
-snakemake --cores 4
-
-Outputs
-results/fastqc/ → FastQC reports (raw + trimmed)
-
-results/trimmed/ → Adapter-trimmed FASTQs
-
-results/alignment/ → Aligned BAM files
-
-results/multiqc_report.html → Final MultiQC summary
-
-
