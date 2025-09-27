@@ -1,11 +1,12 @@
 # --- Directories ---
 FASTQC_DIR = "results/fastqc"
 TRIM_DIR   = "results/trimmed"
+ALIGN_DIR  = "results/alignment"
 
 # --- Final target ---
 rule all:
     input:
-        "results/multiqc_report.html"
+        f"{ALIGN_DIR}/SRR000648.bam"
 
 # --- Download FASTQ ---
 rule download_fastq:
@@ -122,4 +123,28 @@ rule star_align:
              --outFileNamePrefix {ALIGN_DIR}/SRR000648_
         mv {ALIGN_DIR}/SRR000648_Aligned.sortedByCoord.out.bam {output.bam}
         """
+# --- STAR alignment ---
+ALIGN_DIR = "results/alignment"
+
+rule star_align:
+    input:
+        reads = "results/trimmed/SRR000648_trimmed.fastq.gz",
+        index = "reference/star_index"
+    output:
+        bam = f"{ALIGN_DIR}/SRR000648.bam"
+    threads: 4
+    shell:
+        r"""
+        mkdir -p {ALIGN_DIR}
+        STAR --runThreadN {threads} \
+             --genomeDir {input.index} \
+             --readFilesIn {input.reads} \
+             --readFilesCommand zcat \
+             --outSAMtype BAM SortedByCoordinate \
+             --outFileNamePrefix {ALIGN_DIR}/SRR000648_
+
+        # Rename STAR output to expected BAM
+        mv {ALIGN_DIR}/SRR000648_Aligned.sortedByCoord.out.bam {output.bam}
+        """
+
 
