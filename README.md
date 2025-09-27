@@ -1,23 +1,23 @@
-RNA-seq NGS Pipeline
 # RNA-seq Pipeline (Snakemake + Docker)
 
-This repository contains a **reproducible RNA-seq pipeline** built with Snakemake and Docker.
+This repository contains a **reproducible RNA-seq analysis pipeline** built with **Snakemake** and **Docker**.  
+It automates all major steps of RNA-seq data processing — from downloading FASTQ files to generating aligned BAMs and summary reports.
 
-## Features
-- Downloads raw FASTQ data from ENA/SRA (`fastq-dl`)
-- Runs quality control (`FastQC`, `MultiQC`)
-- Adapter and quality trimming (`cutadapt`)
-- STAR genome alignment
-- Configurable via `config.yaml`
+---
 
-## Usage
+##  Features
+- 🔹 Download FASTQ files from **ENA/SRA** using [`fastq-dl`](https://github.com/rnajena/fastq-dl)  
+- 🔹 Quality control with **FastQC**  
+- 🔹 Adapter and quality trimming using **cutadapt**  
+- 🔹 Genome alignment with **STAR**  
+- 🔹 Aggregated reports with **MultiQC**  
+- 🔹 Flexible configuration via `config.yaml`
 
-### Build the Docker image
+---
 
-docker build -t rnaseq-pipeline .
+## 🛠️ Setup
 
-## Run
-
-docker run -it --rm -v ${PWD}:/pipeline rnaseq-pipeline bash
-cd workflow
-snakemake --cores 4
+### 1. Clone the repository
+```bash
+git clone https://github.com/vishnuvij/rnaseq-pipeline.git
+cd rnaseq-pipeline
