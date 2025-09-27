@@ -5,7 +5,7 @@ It automates all major steps of RNA-seq data processing — from downloading FAS
 
 ---
 
-## ✨ Features
+##  Features
 - 🔹 Download FASTQ files from **ENA/SRA** using [`fastq-dl`](https://github.com/rnajena/fastq-dl)  
 - 🔹 Quality control with **FastQC**  
 - 🔹 Adapter and quality trimming using **cutadapt**  
@@ -21,8 +21,45 @@ It automates all major steps of RNA-seq data processing — from downloading FAS
 ```bash
 git clone https://github.com/vishnuvij/rnaseq-pipeline.git
 cd rnaseq-pipeline
+```
 
-### 1. Clone the repository
+### 2. Build the Docker image
 ```bash
-git clone https://github.com/vishnuvij/rnaseq-pipeline.git
-cd rnaseq-pipeline
+docker build -t rnaseq-pipeline .
+```
+### 3.Configuration
+
+All samples and the reference genome are defined in config.yaml.
+```bash
+samples:
+  - SRR000648
+
+reference:
+  name: Saccharomyces_cerevisiae.R64-1-1.dna.toplevel
+  url: "https://ftp.ensembl.org/pub/release-111/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
+```
+Add as many sample accessions under samples as you want
+
+Change reference to use a different genome
+
+### Usage
+
+Run the pipeline inside Docker:
+```
+docker run -it --rm -v ${PWD}:/pipeline rnaseq-pipeline
+cd workflow
+snakemake --cores 4
+
+```
+
+### Outputs
+
+results/fastqc/ → FastQC reports (raw + trimmed)
+
+results/trimmed/ → Adapter-trimmed FASTQs
+
+results/alignment/ → Aligned BAM files
+
+results/multiqc_report.html → Final MultiQC summary
+
+
