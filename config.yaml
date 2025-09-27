@@ -1,11 +1,6 @@
-# config.yaml
-
-# List of sample accessions (SRA/ENA run IDs)
 samples:
   - SRR000648
-  - SRR1552444
 
-# Reference genome (can be yeast, human anythin. Human might need HPC )
 reference:
+  name: Saccharomyces_cerevisiae.R64-1-1.dna.toplevel
   url: "https://ftp.ensembl.org/pub/release-111/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
-  name: "Saccharomyces_cerevisiae.R64-1-1"

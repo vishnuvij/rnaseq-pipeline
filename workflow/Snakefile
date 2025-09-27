@@ -1,50 +1,62 @@
+configfile: "../config.yaml"
+
 # --- Directories ---
 FASTQC_DIR = "results/fastqc"
 TRIM_DIR   = "results/trimmed"
 ALIGN_DIR  = "results/alignment"
 REF_DIR    = "reference"
 
-# --- Final target ---
+# --- Config-driven inputs ---
+SAMPLES = config["samples"]
+GENOME_FASTA_GZ = f"{REF_DIR}/{config['reference']['name']}.fa.gz"
+STAR_INDEX = f"{REF_DIR}/star_index"
+
+# Optional safety: if Snakemake ever sees ambiguity, prefer raw FastQC first
+ruleorder: fastqc_raw > fastqc_trimmed
+
+# --- Final target(s) ---
 rule all:
     input:
-        f"{ALIGN_DIR}/SRR000648.bam",
+        # one BAM per sample
+        expand(f"{ALIGN_DIR}/{{sample}}.bam", sample=SAMPLES),
+        # one combined QC dashboard
         "results/multiqc_report.html"
 
 # --- Download FASTQ ---
 rule download_fastq:
     output:
-        "data/SRR000648.fastq.gz"
+        "data/{sample}.fastq.gz"
     shell:
         """
-        fastq-dl --accession SRR000648 --outdir data --provider ena
+        fastq-dl --accession {wildcards.sample} --outdir data --provider ena
         """
 
-# --- FastQC on raw reads ---
+# --- FastQC on raw reads (use _raw_ to avoid name clashes) ---
 rule fastqc_raw:
     input:
-        "data/SRR000648.fastq.gz"
+        "data/{sample}.fastq.gz"
     output:
-        html = f"{FASTQC_DIR}/SRR000648_fastqc.html",
-        zip  = f"{FASTQC_DIR}/SRR000648_fastqc.zip"
+        html = f"{FASTQC_DIR}/{{sample}}_raw_fastqc.html",
+        zip  = f"{FASTQC_DIR}/{{sample}}_raw_fastqc.zip"
     shell:
         """
+        mkdir -p {FASTQC_DIR}
         fastqc {input} --outdir {FASTQC_DIR}
         """
 
-# --- Trim adapters & low-quality bases ---
+# --- Trimming ---
 rule trim_reads:
     input:
-        "data/SRR000648.fastq.gz"
+        "data/{sample}.fastq.gz"
     output:
-        f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz"
+        f"{TRIM_DIR}/{{sample}}_trimmed.fastq.gz"
     threads: 2
     params:
-        adapter = "AGATCGGAAGAGC",   # common Illumina adapter
-        q = 20,                      # quality trim threshold
-        minlen = 20                  # drop reads shorter than this
+        adapter = "AGATCGGAAGAGC",
+        q = 20,
+        minlen = 20
     shell:
-        r"""
-        set -euo pipefail
+        """
         mkdir -p {TRIM_DIR}
         cutadapt -j {threads} -a {params.adapter} -q {params.q} -m {params.minlen} \
           -o {output} {input}
@@ -53,76 +65,71 @@ rule trim_reads:
 # --- FastQC on trimmed reads ---
 rule fastqc_trimmed:
     input:
-        f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz"
+        f"{TRIM_DIR}/{{sample}}_trimmed.fastq.gz"
     output:
-        html = f"{FASTQC_DIR}/SRR000648_trimmed_fastqc.html",
-        zip  = f"{FASTQC_DIR}/SRR000648_trimmed_fastqc.zip"
+        html = f"{FASTQC_DIR}/{{sample}}_trimmed_fastqc.html",
+        zip  = f"{FASTQC_DIR}/{{sample}}_trimmed_fastqc.zip"
     shell:
         """
+        mkdir -p {FASTQC_DIR}
         fastqc {input} --outdir {FASTQC_DIR}
         """
 
-# --- MultiQC summary ---
-rule multiqc:
-    input:
-        expand(f"{FASTQC_DIR}/{{sample}}_fastqc.html", sample=["SRR000648", "SRR000648_trimmed"])
-    output:
-        "results/multiqc_report.html"
-    shell:
-        """
-        multiqc results/fastqc --outdir results
-        """
-
-# --- Reference genome (yeast) ---
-GENOME_FASTA_GZ = f"{REF_DIR}/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz"
-
+# --- Reference genome ---
 rule download_reference:
     output:
         GENOME_FASTA_GZ
     shell:
-        r"""
-        set -euo pipefail
+        f"""
         mkdir -p {REF_DIR}
-        wget -O {output} https://ftp.ensembl.org/pub/release-111/fasta/saccharomyces_cerevisiae/dna/Saccharomyces_cerevisiae.R64-1-1.dna.toplevel.fa.gz
+        wget -O {{output}} {config['reference']['url']}
         """
 
-# --- STAR genome index ---
-STAR_INDEX = f"{REF_DIR}/star_index"
-
+# --- STAR index (FASTA-only is fine for demo) ---
 rule star_index:
     input:
-        fasta = GENOME_FASTA_GZ
+        GENOME_FASTA_GZ
     output:
         directory(STAR_INDEX)
     threads: 4
     shell:
-        r"""
-        set -euo pipefail
+        """
         mkdir -p {output}
-        gunzip -c {input.fasta} > {REF_DIR}/genome.fa
+        gunzip -c {input} > {REF_DIR}/genome.fa
         STAR --runThreadN {threads} \
              --runMode genomeGenerate \
              --genomeDir {output} \
              --genomeFastaFiles {REF_DIR}/genome.fa
         """
 
-# --- STAR alignment ---
+# --- STAR alignment (sorted BAM) ---
 rule star_align:
     input:
-        reads = f"{TRIM_DIR}/SRR000648_trimmed.fastq.gz",
+        reads = f"{TRIM_DIR}/{{sample}}_trimmed.fastq.gz",
         index = STAR_INDEX
     output:
-        bam = f"{ALIGN_DIR}/SRR000648.bam"
+        f"{ALIGN_DIR}/{{sample}}.bam"
     threads: 4
     shell:
-        r"""
+        """
         mkdir -p {ALIGN_DIR}
         STAR --runThreadN {threads} \
              --genomeDir {input.index} \
              --readFilesIn {input.reads} \
              --readFilesCommand zcat \
              --outSAMtype BAM SortedByCoordinate \
-             --outFileNamePrefix {ALIGN_DIR}/SRR000648_
+             --outFileNamePrefix {ALIGN_DIR}/{wildcards.sample}_
+        mv {ALIGN_DIR}/{wildcards.sample}_Aligned.sortedByCoord.out.bam {output}
+        """
 
-        mv {ALIGN_DIR}/SRR000648_Aligned.sortedByCoord.out.bam {output.bam}
+# --- MultiQC across all samples (raw + trimmed FastQC) ---
+rule multiqc:
+    input:
+        expand(f"{FASTQC_DIR}/{{sample}}_raw_fastqc.html", sample=SAMPLES) +
+        expand(f"{FASTQC_DIR}/{{sample}}_trimmed_fastqc.html", sample=SAMPLES)
+    output:
+        "results/multiqc_report.html"
+    shell:
+        """
+        multiqc results/fastqc --outdir results
         """
