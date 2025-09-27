@@ -25,3 +25,6 @@ reference/*
 # Alignment outputs
 results/alignment/*
 !results/alignment/README.md
+
+# Config file
+!config.yaml
