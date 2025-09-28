@@ -6,12 +6,12 @@ It automates all major steps of RNA-seq data processing — from downloading FAS
 ---
 
 ##  Features
-- 🔹 Download FASTQ files from **ENA/SRA** using [`fastq-dl`](https://github.com/rnajena/fastq-dl)  
-- 🔹 Quality control with **FastQC**  
-- 🔹 Adapter and quality trimming using **cutadapt**  
-- 🔹 Genome alignment with **STAR**  
-- 🔹 Aggregated reports with **MultiQC**  
-- 🔹 Flexible configuration via `config.yaml`
+🔹 Download FASTQ files from **ENA/SRA** using [`fastq-dl`](https://github.com/rnajena/fastq-dl)  
+🔹 Quality control with **FastQC**  
+🔹 Adapter and quality trimming using **cutadapt**  
+🔹 Genome alignment with **STAR**  
+🔹 Aggregated reports with **MultiQC**  
+🔹 Flexible configuration via `config.yaml`
 
 ---
 
